@@ -1,19 +1,19 @@
-export const createBattleData=()=>({obstacles:[[4,3],[4,4],[4,5],[2,4],[6,4]],units:[
-{id:'obsidian',name:'OBSIDIAN',team:'blue',q:1,r:6,hp:2600,maxHp:2600,ap:2,mp:3,atk:390,def:360},
-{id:'red-eye',name:'RED EYE',team:'blue',q:1,r:7,hp:1900,maxHp:1900,ap:2,mp:4,atk:520,def:190},
-{id:'void-priest',name:'VOID PRIEST',team:'blue',q:2,r:7,hp:2000,maxHp:2000,ap:2,mp:3,atk:390,def:260},
-{id:'brood',name:'BROODMOTHER',team:'red',q:7,r:1,hp:2300,maxHp:2300,ap:2,mp:3,atk:370,def:300},
-{id:'titan',name:'TITAN CORE',team:'red',q:7,r:2,hp:2800,maxHp:2800,ap:2,mp:2,atk:420,def:390},
-{id:'neon',name:'NEON ROGUE',team:'red',q:6,r:1,hp:1850,maxHp:1850,ap:2,mp:5,atk:510,def:190}
-]});
+export const FACTIONS=[
+{id:'dark',name:'DARK ORDER',color:0xb36cff,heroes:['OBSIDIAN','RED EYE','WARLORD KHAR','NECRO CAPTAIN','SHADOW VECTOR','VOID PRIEST']},
+{id:'xeno',name:'XENO GENESIS',color:0x8be35b,heroes:['BROODMOTHER','VEXOR TALON','SPOROID','BIOHUNTER','RAZOR WOLF','NEBULA LEECH']},
+{id:'machine',name:'MACHINE DYNASTY',color:0x55eaff,heroes:['THE HIVE','TITAN CORE','GOLIATH DROID','SCRAP KING','IRON MONK','IRON PALADIN']},
+{id:'cosmic',name:'COSMIC ASCENDANCY',color:0xffca55,heroes:['DREAD EMPEROR','CRYSTAL MIND','ECLIPSE SISTER','VOID EMPRESS','STORM AEON','PLASMA WRAITH']},
+{id:'frontier',name:'FRONTIER SYNDICATE',color:0xff607b,heroes:['NEON ROGUE','SAND NOMAD','ORACLE-IX','BYTE WITCH','TERRAKON','ORBITAL KRAKEN']}];
+const archetypes=[{hp:260,atk:44,def:24,mp:3,range:1,role:'Танк'},{hp:175,atk:58,def:10,mp:4,range:3,role:'Стрелок'},{hp:210,atk:48,def:16,mp:3,range:2,role:'Штурмовик'},{hp:190,atk:42,def:13,mp:3,range:3,role:'Поддержка'},{hp:165,atk:62,def:9,mp:5,range:1,role:'Ассасин'},{hp:200,atk:52,def:18,mp:3,range:3,role:'Псионик'}];
+export const HEROES=FACTIONS.flatMap((f,fi)=>f.heroes.map((name,i)=>{const a=archetypes[i];return{id:fi*6+i,name,faction:f.id,factionName:f.name,color:f.color,sprite:fi*6+i,...a,abilities:[{name:['Импульсный удар','Плазменный залп','Разрыв брони','Нейрошок','Фантомный рывок','Пси-волна'][i],cost:1,power:1.45,range:i===0?1:3,kind:'active',desc:'Усиленная атака выбранной цели.'},{name:['Закалённая броня','Тактический прицел','Адаптивная ткань','Ремонтный рой','Хищный инстинкт','Пси-резонанс'][i],kind:'passive',desc:'Пассивный боевой модификатор.'},{name:['Сингулярность','Орбитальный удар','Рой пожирателей','Перегрузка ядра','Квантовый шторм','Разлом пустоты'][i],cost:2,power:2.5,range:3,kind:'ultimate',desc:'Мощная атака за 2 AP.'}]};}));
+export const ARENAS=[
+{id:'arkon',name:'RUINS OF ARKON',subtitle:'Руины древней колонии',obstacles:[[2,2],[3,2],[6,2],[6,3],[2,6],[3,6],[6,6],[7,6],[4,4]],hazards:[[4,1],[4,7]]},
+{id:'foundry',name:'FORGOTTEN FOUNDRY',subtitle:'Заброшенный литейный комплекс',obstacles:[[1,2],[1,3],[2,3],[4,2],[4,3],[4,5],[4,6],[7,5],[7,6]],hazards:[[2,5],[6,2]]},
+{id:'nebula',name:'NEBULA-7',subtitle:'Кристаллический разлом',obstacles:[[2,1],[2,2],[3,2],[6,5],[6,6],[7,6],[4,3],[4,4]],hazards:[[1,5],[7,2]]}];
 export const hexDistance=(a,b)=>{const dq=a.q-b.q,dr=a.r-b.r;return(Math.abs(dq)+Math.abs(dr)+Math.abs(dq+dr))/2};
-const dirs=[[1,0],[1,-1],[0,-1],[-1,0],[-1,1],[0,1]];
-export function findHexPath(start,end,obstacles,units){
- const key=(q,r)=>q+','+r,blocked=new Set(obstacles.map(([q,r])=>key(q,r)));
- units.forEach(u=>{if(!(u.q===start.q&&u.r===start.r))blocked.add(key(u.q,u.r));});
- const open=[{q:start.q,r:start.r,g:0,f:hexDistance(start,end),prev:null}],seen=new Map();
- while(open.length){open.sort((a,b)=>a.f-b.f);const cur=open.shift(),k=key(cur.q,cur.r);if(seen.has(k))continue;seen.set(k,cur);
-  if(cur.q===end.q&&cur.r===end.r){const path=[];for(let n=cur;n;n=n.prev)path.unshift({q:n.q,r:n.r});return path;}
-  for(const [dq,dr] of dirs){const q=cur.q+dq,r=cur.r+dr,nk=key(q,r);if(q<0||r<0||q>8||r>8||blocked.has(nk)||seen.has(nk))continue;const g=cur.g+1;open.push({q,r,g,f:g+hexDistance({q,r},end),prev:cur});}
- }return [];
-}
+const DIRS=[[1,0],[1,-1],[0,-1],[-1,0],[-1,1],[0,1]];
+export function findHexPath(start,end,obstacles,units=[],size=9){const key=(q,r)=>q+','+r,blocked=new Set(obstacles.map(([q,r])=>key(q,r)));units.forEach(u=>{if(u.unitId!==start.unitId)blocked.add(key(u.q,u.r));});const open=[{q:start.q,r:start.r,g:0,f:hexDistance(start,end),prev:null}],seen=new Set();while(open.length){open.sort((a,b)=>a.f-b.f);const cur=open.shift(),k=key(cur.q,cur.r);if(seen.has(k))continue;seen.add(k);if(cur.q===end.q&&cur.r===end.r){const path=[];for(let n=cur;n;n=n.prev)path.unshift({q:n.q,r:n.r});return path;}for(const[dq,dr]of DIRS){const q=cur.q+dq,r=cur.r+dr,nk=key(q,r);if(q<0||r<0||q>=size||r>=size||blocked.has(nk)||seen.has(nk))continue;const g=cur.g+1;open.push({q,r,g,f:g+hexDistance({q,r},end),prev:cur});}}return[];}
+export function createBattleData(arenaId='arkon'){const arena=ARENAS.find(a=>a.id===arenaId)||ARENAS[0];const make=(id,q,r,team)=>{const h=HEROES[id];return{...h,unitId:team+'-'+id,team,q,r,hp:h.hp,maxHp:h.hp,ap:2,mp:h.mp,shield:0,alive:true,guard:false};};return{arena,round:1,turn:'player',units:[make(0,1,6,'player'),make(1,1,7,'player'),make(5,2,7,'player'),make(6,7,1,'enemy'),make(12,7,2,'enemy'),make(24,6,1,'enemy')],obstacles:arena.obstacles.map(p=>[...p]),hazards:arena.hazards.map(p=>[...p]),log:[],winner:null};}
+export function combatDamage(attacker,target,multiplier=1){const raw=Math.round(attacker.atk*multiplier),damage=Math.max(8,Math.round(raw*100/(100+target.def)));const absorbed=Math.min(target.shield||0,damage);target.shield=(target.shield||0)-absorbed;target.hp=Math.max(0,target.hp-(damage-absorbed));if(!target.hp)target.alive=false;return damage;}
+export function useAbility(unit,target,index){const a=unit.abilities[index];if(!a||unit.ap<a.cost)return{ok:false,reason:'Недостаточно AP'};if(!target?.alive||target.team===unit.team||hexDistance(unit,target)>a.range)return{ok:false,reason:'Цель вне радиуса'};unit.ap-=a.cost;const damage=combatDamage(unit,target,a.power);return{ok:true,damage,killed:!target.alive,ability:a.name};}
+export function endPlayerTurn(b){b.turn='enemy';for(const e of b.units.filter(u=>u.team==='enemy'&&u.alive)){e.ap=2;const targets=b.units.filter(u=>u.team==='player'&&u.alive).sort((a,c)=>hexDistance(e,a)-hexDistance(e,c));const t=targets[0];if(!t)break;if(hexDistance(e,t)<=e.range){combatDamage(e,t);e.ap--;}else{const path=findHexPath(e,t,b.obstacles,b.units);const steps=Math.min(e.mp,Math.max(0,path.length-2));if(steps){e.q=path[steps].q;e.r=path[steps].r;e.mp-=steps;}if(hexDistance(e,t)<=e.range&&e.ap){combatDamage(e,t);e.ap--;}}}if(!b.units.some(u=>u.alive&&u.team==='enemy'))b.winner='player';else if(!b.units.some(u=>u.alive&&u.team==='player'))b.winner='enemy';if(!b.winner){b.round++;b.turn='player';b.units.filter(u=>u.team==='player'&&u.alive).forEach(u=>{u.ap=2;u.mp=u.mp;});}return b;}
